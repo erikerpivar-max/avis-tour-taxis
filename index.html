@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Avis IXINA Tour & Taxis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bleu: #014076;
+    --nuit: #102335;
+    --jaune: #F9DE53;
+    --fond: #F4F6F9;
+    --carte: #FFFFFF;
+    --gris: #5B6B7C;
+    --trait: #E1E6EC;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: Poppins, system-ui, sans-serif;
+    background: var(--fond);
+    color: var(--nuit);
+    min-height: 100dvh;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  header {
+    background: var(--bleu);
+    color: #fff;
+    padding: calc(28px + env(safe-area-inset-top)) 20px 26px;
+  }
+  .logo { font-weight: 700; font-size: 26px; letter-spacing: -0.5px; }
+  .logo span { font-weight: 400; font-size: 15px; opacity: .8; margin-left: 6px; letter-spacing: 0; }
+  h1 { font-size: 22px; line-height: 1.25; font-weight: 600; margin-top: 18px; }
+  header p { font-size: 14px; opacity: .85; margin-top: 6px; line-height: 1.45; }
+
+  .filtres {
+    position: sticky; top: 0; z-index: 2;
+    display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
+    padding: 12px 16px; background: var(--fond);
+    border-bottom: 1px solid var(--trait);
+  }
+  .filtres::-webkit-scrollbar { display: none; }
+  .filtres button {
+    flex: none; font: 500 14px Poppins, sans-serif;
+    padding: 8px 14px; border-radius: 99px;
+    border: 1px solid var(--trait); background: #fff; color: var(--nuit);
+  }
+  .filtres button[aria-pressed="true"] { background: var(--bleu); border-color: var(--bleu); color: #fff; }
+
+  main { padding: 14px 16px 120px; display: grid; gap: 10px; max-width: 640px; margin: 0 auto; }
+  .avis {
+    text-align: left; width: 100%;
+    font: 400 15px/1.5 Poppins, sans-serif; color: var(--nuit);
+    background: var(--carte); border: 1px solid var(--trait); border-radius: 14px;
+    padding: 16px;
+  }
+  .avis:active { border-color: var(--bleu); background: #F0F5FA; }
+
+  .propre {
+    position: fixed; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom));
+    max-width: 608px; margin: 0 auto;
+    font: 600 15px Poppins, sans-serif; color: var(--bleu);
+    background: #fff; border: 2px solid var(--bleu); border-radius: 14px; padding: 14px;
+    box-shadow: 0 6px 24px rgba(16,35,53,.12);
+  }
+
+  /* Écran 2 : l'avis choisi */
+  .feuille {
+    position: fixed; inset: 0; z-index: 10;
+    background: rgba(16,35,53,.5);
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .feuille[hidden] { display: none; }
+  .panneau {
+    background: #fff; width: 100%; max-width: 640px;
+    border-radius: 22px 22px 0 0;
+    padding: 22px 20px calc(20px + env(safe-area-inset-bottom));
+    max-height: 92dvh; overflow-y: auto;
+    animation: monte .22s ease-out;
+  }
+  @keyframes monte { from { transform: translateY(40px); opacity: 0; } }
+  .panneau h2 { font-size: 18px; font-weight: 600; }
+  textarea {
+    width: 100%; margin-top: 12px; min-height: 140px; resize: vertical;
+    font: 400 16px/1.5 Poppins, sans-serif; color: var(--nuit);
+    border: 1px solid var(--trait); border-radius: 12px; padding: 14px;
+    background: var(--fond);
+  }
+  textarea:focus { outline: 2px solid var(--bleu); outline-offset: -1px; background: #fff; }
+  .compteur { font-size: 13px; color: var(--gris); margin-top: 6px; text-align: right; }
+  .compteur.court { color: #B3261E; }
+  .astuce { font-size: 13px; color: var(--gris); margin-top: 4px; line-height: 1.45; }
+
+  .etapes { list-style: none; padding: 0; margin: 18px 0; display: grid; gap: 8px; }
+  .etapes li { display: flex; gap: 10px; align-items: center; font-size: 14px; }
+  .etapes b {
+    flex: none; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--jaune); color: var(--nuit);
+    display: grid; place-items: center; font-size: 13px;
+  }
+
+  .publier {
+    width: 100%; font: 600 17px Poppins, sans-serif;
+    background: var(--bleu); color: #fff; border: 0; border-radius: 14px; padding: 17px;
+  }
+  .publier:disabled { opacity: .4; }
+  .retour {
+    width: 100%; margin-top: 8px; background: none; border: 0; padding: 12px;
+    font: 500 15px Poppins, sans-serif; color: var(--gris);
+  }
+
+  .toast {
+    position: fixed; left: 50%; top: calc(20px + env(safe-area-inset-top)); z-index: 20;
+    transform: translateX(-50%);
+    background: var(--nuit); color: #fff; font-size: 15px; font-weight: 500;
+    padding: 12px 20px; border-radius: 99px;
+  }
+  .toast[hidden] { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ixina<span>Tour & Taxis</span></div>
+  <h1>Merci pour votre confiance !</h1>
+  <p>Touchez l'avis qui vous ressemble. Vous pourrez le modifier avant de le publier sur Google.</p>
+</header>
+
+<nav class="filtres" id="filtres"></nav>
+<main id="liste"></main>
+<button class="propre" id="propre">Écrire mon propre avis</button>
+
+<div class="feuille" id="feuille" hidden>
+  <div class="panneau" role="dialog" aria-modal="true" aria-labelledby="titre-feuille">
+    <h2 id="titre-feuille">Votre avis</h2>
+    <textarea id="texte" aria-label="Texte de votre avis"></textarea>
+    <div class="compteur" id="compteur"></div>
+    <p class="astuce">Ajoutez votre touche : le prénom de votre conseiller, votre commune, un détail de votre cuisine.</p>
+    <ol class="etapes">
+      <li><b>1</b>Choisissez vos étoiles</li>
+      <li><b>2</b>Appui long dans la case, puis « Coller »</li>
+      <li><b>3</b>Touchez « Publier »</li>
+    </ol>
+    <button class="publier" id="publier">Copier et ouvrir Google</button>
+    <button class="retour" id="retour">Choisir un autre avis</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden>Texte copié ✓</div>
+
+<script src="avis.js"></script>
+<script>
+  const lienGoogle = "https://search.google.com/local/writereview?placeid=" + MAGASIN.placeId;
+  const $ = (id) => document.getElementById(id);
+  let filtre = "tous";
+
+  // Ordre mélangé à chaque visite : deux clients voient rarement les mêmes avis en premier.
+  const melanges = AVIS.map((a) => ({ cat: a[0], texte: a[1], hasard: Math.random() }))
+    .sort((a, b) => a.hasard - b.hasard);
+
+  function afficherFiltres() {
+    const choix = { tous: "Tous", ...CATEGORIES };
+    $("filtres").innerHTML = "";
+    for (const [cle, nom] of Object.entries(choix)) {
+      const b = document.createElement("button");
+      b.textContent = nom;
+      b.setAttribute("aria-pressed", cle === filtre);
+      b.onclick = () => { filtre = cle; afficherFiltres(); afficherListe(); window.scrollTo({ top: $("filtres").offsetTop }); };
+      $("filtres").appendChild(b);
+    }
+  }
+
+  function afficherListe() {
+    $("liste").innerHTML = "";
+    for (const a of melanges) {
+      if (filtre !== "tous" && a.cat !== filtre) continue;
+      const b = document.createElement("button");
+      b.className = "avis";
+      b.textContent = a.texte;
+      b.onclick = () => ouvrir(a.texte);
+      $("liste").appendChild(b);
+    }
+  }
+
+  function ouvrir(texte) {
+    $("texte").value = texte;
+    $("titre-feuille").textContent = texte ? "Votre avis" : "Votre propre avis";
+    compter();
+    $("feuille").hidden = false;
+    document.body.style.overflow = "hidden";
+    if (!texte) $("texte").focus();
+  }
+
+  function fermer() {
+    $("feuille").hidden = true;
+    document.body.style.overflow = "";
+  }
+
+  function compter() {
+    const n = $("texte").value.trim().length;
+    const manque = MAGASIN.minCaracteres - n;
+    $("compteur").textContent = manque > 0 ? `Encore ${manque} caractères` : `${n} caractères ✓`;
+    $("compteur").classList.toggle("court", manque > 0);
+    $("publier").disabled = manque > 0;
+  }
+
+  function copier(texte) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(texte).catch(() => copierAncien(texte));
+    }
+    return Promise.resolve(copierAncien(texte));
+  }
+
+  function copierAncien(texte) {
+    const t = document.createElement("textarea");
+    t.value = texte;
+    t.setAttribute("readonly", "");
+    t.style.position = "fixed";
+    t.style.opacity = "0";
+    document.body.appendChild(t);
+    t.select();
+    t.setSelectionRange(0, texte.length);
+    document.execCommand("copy");
+    t.remove();
+  }
+
+  $("texte").addEventListener("input", compter);
+  $("retour").onclick = fermer;
+  $("feuille").onclick = (e) => { if (e.target === $("feuille")) fermer(); };
+  $("propre").onclick = () => ouvrir("");
+
+  $("publier").onclick = () => {
+    copier($("texte").value.trim()).then(() => {
+      $("toast").hidden = false;
+      setTimeout(() => { window.location.href = lienGoogle; }, 700);
+    });
+  };
+
+  afficherFiltres();
+  afficherListe();
+</script>
+</body>
+</html>
