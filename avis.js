@@ -7,7 +7,7 @@ const MAGASIN = {
   nom: "IXINA Tour & Taxis",
   placeId: "ChIJx-24JCzDw0cRg2urTsoi1TE",
   minCaracteres: 90,
-  conseillers: ["Kamel", "Fred"],
+  conseillers: ["Kamel", "Fred", "Gita"],
   // Adresse du script Google Sheet (vide = les avis ne disparaissent pas).
   script: "",
 };
@@ -42,7 +42,7 @@ const AVIS = [
   ["r027", "Un rendez-vous sérieux et chaleureux à la fois. {C} a des idées pleines de bon sens pour la cuisine. On recommande."],
   ["r028", "Super rendez-vous ! {C} a répondu à toutes nos questions sur les meubles, le plan de travail et l'électroménager de la cuisine."],
   ["r029", "Merci {c} pour le temps passé avec nous. Le rendez-vous a été clair du début à la fin et notre cuisine prend forme."],
-  ["r030", "{C} est disponible, à l'écoute et plein de bonnes idées. Ce rendez-vous a vraiment fait avancer notre projet de cuisine."],
+  ["r030", "{C} est disponible, à l'écoute et a plein de bonnes idées. Ce rendez-vous a vraiment fait avancer notre projet de cuisine."],
   ["r031", "Rendez-vous au top avec {c} : des conseils honnêtes, un devis clair et une belle cuisine en vue. Merci !"],
   ["r032", "On recommande de prendre rendez-vous avec {c}. Écoute, conseils et bonne humeur pour un projet de cuisine bien pensé."],
   ["r033", "{C} nous a guidés pas à pas pendant le rendez-vous. Pour une première cuisine, c'était exactement ce qu'il nous fallait."],
