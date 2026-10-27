@@ -26,6 +26,7 @@
     min-height: 100dvh;
     -webkit-tap-highlight-color: transparent;
   }
+  [hidden] { display: none !important; }
 
   header {
     background: var(--bleu);
@@ -36,21 +37,21 @@
   .logo span { font-weight: 400; font-size: 15px; opacity: .8; margin-left: 6px; letter-spacing: 0; }
   h1 { font-size: 22px; line-height: 1.25; font-weight: 600; margin-top: 18px; }
   header p { font-size: 14px; opacity: .85; margin-top: 6px; line-height: 1.45; }
-
-  .filtres {
-    position: sticky; top: 0; z-index: 2;
-    display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
-    padding: 12px 16px; background: var(--fond);
-    border-bottom: 1px solid var(--trait);
+  .changer {
+    background: none; border: 0; padding: 0; margin-left: 4px;
+    font: inherit; color: #fff; text-decoration: underline; opacity: 1;
   }
-  .filtres::-webkit-scrollbar { display: none; }
-  .filtres button {
-    flex: none; font: 500 14px Poppins, sans-serif;
-    padding: 8px 14px; border-radius: 99px;
-    border: 1px solid var(--trait); background: #fff; color: var(--nuit);
-  }
-  .filtres button[aria-pressed="true"] { background: var(--bleu); border-color: var(--bleu); color: #fff; }
 
+  /* Écran 1 : qui vous a reçu ? */
+  .qui { padding: 20px 16px; display: grid; gap: 12px; max-width: 640px; margin: 0 auto; }
+  .qui button {
+    font: 600 18px Poppins, sans-serif; color: var(--bleu);
+    background: #fff; border: 2px solid var(--trait); border-radius: 16px; padding: 22px;
+  }
+  .qui button:active { border-color: var(--bleu); background: #F0F5FA; }
+  .qui .autre { font-weight: 500; font-size: 16px; color: var(--gris); padding: 16px; }
+
+  /* Écran 2 : la liste */
   main { padding: 14px 16px 120px; display: grid; gap: 10px; max-width: 640px; margin: 0 auto; }
   .avis {
     text-align: left; width: 100%;
@@ -68,13 +69,12 @@
     box-shadow: 0 6px 24px rgba(16,35,53,.12);
   }
 
-  /* Écran 2 : l'avis choisi */
+  /* Écran 3 : l'avis choisi */
   .feuille {
     position: fixed; inset: 0; z-index: 10;
     background: rgba(16,35,53,.5);
     display: flex; align-items: flex-end; justify-content: center;
   }
-  .feuille[hidden] { display: none; }
   .panneau {
     background: #fff; width: 100%; max-width: 640px;
     border-radius: 22px 22px 0 0;
@@ -119,27 +119,27 @@
     background: var(--nuit); color: #fff; font-size: 15px; font-weight: 500;
     padding: 12px 20px; border-radius: 99px;
   }
-  .toast[hidden] { display: none; }
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">ixina<span>Tour & Taxis</span></div>
-  <h1>Merci pour votre confiance !</h1>
-  <p>Touchez l'avis qui vous ressemble. Vous pourrez le modifier avant de le publier sur Google.</p>
+  <h1>Merci pour votre visite !</h1>
+  <p id="sous-titre">Qui vous a reçu aujourd'hui ?</p>
 </header>
 
-<nav class="filtres" id="filtres"></nav>
-<main id="liste"></main>
-<button class="propre" id="propre">Écrire mon propre avis</button>
+<section class="qui" id="qui"></section>
+
+<main id="liste" hidden></main>
+<button class="propre" id="propre" hidden>Écrire mon propre avis</button>
 
 <div class="feuille" id="feuille" hidden>
   <div class="panneau" role="dialog" aria-modal="true" aria-labelledby="titre-feuille">
     <h2 id="titre-feuille">Votre avis</h2>
     <textarea id="texte" aria-label="Texte de votre avis"></textarea>
     <div class="compteur" id="compteur"></div>
-    <p class="astuce">Ajoutez votre touche : le prénom de votre conseiller, votre commune, un détail de votre cuisine.</p>
+    <p class="astuce">Ajoutez votre touche si vous voulez : votre commune, un détail de votre projet.</p>
     <ol class="etapes">
       <li><b>1</b>Choisissez vos étoiles</li>
       <li><b>2</b>Appui long dans la case, puis « Coller »</li>
@@ -156,43 +156,102 @@
 <script>
   const lienGoogle = "https://search.google.com/local/writereview?placeid=" + MAGASIN.placeId;
   const $ = (id) => document.getElementById(id);
-  let filtre = "tous";
 
-  // Ordre mélangé à chaque visite : deux clients voient rarement les mêmes avis en premier.
-  const melanges = AVIS.map((a) => ({ cat: a[0], texte: a[1], hasard: Math.random() }))
-    .sort((a, b) => a.hasard - b.hasard);
+  let conseiller = null;       // prénom choisi, ou "" pour « quelqu'un d'autre »
+  let pris = new Set();        // avis déjà utilisés par d'autres clients (Google Sheet)
+  let ajouts = [];             // avis ajoutés à la main dans le Google Sheet
+  let choisi = null;           // avis ouvert en ce moment
 
-  function afficherFiltres() {
-    const choix = { tous: "Tous", ...CATEGORIES };
-    $("filtres").innerHTML = "";
-    for (const [cle, nom] of Object.entries(choix)) {
+  // Ordre mélangé à chaque visite.
+  const hasard = new Map(AVIS.map((a) => [a[0], Math.random()]));
+
+  // Liste des avis déjà pris : la page marche aussi sans, elle montre alors tout.
+  if (MAGASIN.script) {
+    fetch(MAGASIN.script + "?action=liste")
+      .then((r) => r.json())
+      .then((d) => {
+        pris = new Set(d.pris || []);
+        ajouts = (d.ajouts || []).map((a) => [a.id, a.texte]);
+        ajouts.forEach((a) => hasard.set(a[0], Math.random()));
+        if (conseiller !== null) afficherListe();
+      })
+      .catch(() => {});
+  }
+
+  function personnaliser(texte) {
+    const nom = conseiller || "notre conseiller";
+    const Nom = conseiller || "Notre conseiller";
+    return texte.replaceAll("{c}", nom).replaceAll("{C}", Nom);
+  }
+
+  function libres() {
+    const tous = AVIS.concat(ajouts);
+    const restants = tous.filter((a) => !pris.has(a[0]));
+    // Quand presque tout est pris, on remontre tout plutôt qu'une page vide.
+    return restants.length >= 10 ? restants : tous;
+  }
+
+  function afficherQui() {
+    $("qui").innerHTML = "";
+    for (const nom of MAGASIN.conseillers) {
       const b = document.createElement("button");
       b.textContent = nom;
-      b.setAttribute("aria-pressed", cle === filtre);
-      b.onclick = () => { filtre = cle; afficherFiltres(); afficherListe(); window.scrollTo({ top: $("filtres").offsetTop }); };
-      $("filtres").appendChild(b);
+      b.onclick = () => choisirConseiller(nom);
+      $("qui").appendChild(b);
     }
+    const autre = document.createElement("button");
+    autre.className = "autre";
+    autre.textContent = "Quelqu'un d'autre";
+    autre.onclick = () => choisirConseiller("");
+    $("qui").appendChild(autre);
+  }
+
+  function choisirConseiller(nom) {
+    conseiller = nom;
+    $("qui").hidden = true;
+    $("liste").hidden = false;
+    $("propre").hidden = false;
+    $("sous-titre").innerHTML = "";
+    $("sous-titre").append(
+      (nom ? `Reçu par ${nom}. ` : "") + "Touchez l'avis qui vous ressemble."
+    );
+    const changer = document.createElement("button");
+    changer.className = "changer";
+    changer.textContent = nom ? "Changer" : "Changer de conseiller";
+    changer.onclick = revenirQui;
+    $("sous-titre").append(changer);
+    afficherListe();
+    window.scrollTo({ top: 0 });
+  }
+
+  function revenirQui() {
+    conseiller = null;
+    $("qui").hidden = false;
+    $("liste").hidden = true;
+    $("propre").hidden = true;
+    $("sous-titre").textContent = "Qui vous a reçu aujourd'hui ?";
   }
 
   function afficherListe() {
     $("liste").innerHTML = "";
-    for (const a of melanges) {
-      if (filtre !== "tous" && a.cat !== filtre) continue;
+    const liste = libres().sort((a, b) => hasard.get(a[0]) - hasard.get(b[0]));
+    for (const a of liste) {
       const b = document.createElement("button");
       b.className = "avis";
-      b.textContent = a.texte;
-      b.onclick = () => ouvrir(a.texte);
+      b.textContent = personnaliser(a[1]);
+      b.onclick = () => ouvrir(a);
       $("liste").appendChild(b);
     }
   }
 
-  function ouvrir(texte) {
-    $("texte").value = texte;
-    $("titre-feuille").textContent = texte ? "Votre avis" : "Votre propre avis";
+  function ouvrir(avis) {
+    choisi = avis;
+    $("texte").value = avis ? personnaliser(avis[1]) : "";
+    $("titre-feuille").textContent = avis ? "Votre avis" : "Votre propre avis";
     compter();
     $("feuille").hidden = false;
     document.body.style.overflow = "hidden";
-    if (!texte) $("texte").focus();
+    if (!avis) $("texte").focus();
   }
 
   function fermer() {
@@ -228,20 +287,36 @@
     t.remove();
   }
 
+  // Note l'avis comme pris dans le Google Sheet, sans faire attendre le client.
+  function marquerPris(avis, texte) {
+    pris.add(avis[0]);
+    if (!MAGASIN.script) return;
+    const reste = AVIS.concat(ajouts).filter((a) => !pris.has(a[0])).length;
+    const params = new URLSearchParams({
+      action: "prendre",
+      id: avis[0],
+      conseiller: conseiller || "Autre",
+      texte,
+      reste,
+    });
+    fetch(MAGASIN.script + "?" + params, { mode: "no-cors", keepalive: true }).catch(() => {});
+  }
+
   $("texte").addEventListener("input", compter);
   $("retour").onclick = fermer;
   $("feuille").onclick = (e) => { if (e.target === $("feuille")) fermer(); };
-  $("propre").onclick = () => ouvrir("");
+  $("propre").onclick = () => ouvrir(null);
 
   $("publier").onclick = () => {
-    copier($("texte").value.trim()).then(() => {
+    const texte = $("texte").value.trim();
+    if (choisi) marquerPris(choisi, texte);
+    copier(texte).then(() => {
       $("toast").hidden = false;
       setTimeout(() => { window.location.href = lienGoogle; }, 700);
     });
   };
 
-  afficherFiltres();
-  afficherListe();
+  afficherQui();
 </script>
 </body>
 </html>
