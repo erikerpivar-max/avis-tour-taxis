@@ -6,122 +6,141 @@
 <meta name="robots" content="noindex">
 <title>Avis IXINA Tour & Taxis</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
 <style>
+  /* Look « le prénom en monument » : le prénom du conseiller est l'architecture de la page. */
   :root {
     --bleu: #014076;
     --nuit: #102335;
     --jaune: #F9DE53;
-    --fond: #F4F6F9;
-    --carte: #FFFFFF;
+    --pale: #EEF2F6;
     --gris: #5B6B7C;
-    --trait: #E1E6EC;
+    --police: Archivo, system-ui, sans-serif;
   }
   * { box-sizing: border-box; margin: 0; }
   html { -webkit-text-size-adjust: 100%; }
   body {
-    font-family: Poppins, system-ui, sans-serif;
-    background: var(--fond);
+    font-family: var(--police);
+    background: #fff;
     color: var(--nuit);
     min-height: 100dvh;
     -webkit-tap-highlight-color: transparent;
   }
+  body.ecran-qui { background: var(--bleu); }
+  button, textarea { font-family: inherit; }
   [hidden] { display: none !important; }
+  :focus-visible { outline: 3px solid var(--jaune); outline-offset: 2px; }
 
   header {
     background: var(--bleu);
     color: #fff;
-    padding: calc(28px + env(safe-area-inset-top)) 20px 26px;
+    padding: calc(28px + env(safe-area-inset-top)) 20px 22px;
+    overflow: hidden;
   }
-  .logo { font-weight: 700; font-size: 26px; letter-spacing: -0.5px; }
+  .logo { font-weight: 900; font-size: 26px; letter-spacing: -0.5px; }
   .logo span { font-weight: 400; font-size: 15px; opacity: .8; margin-left: 6px; letter-spacing: 0; }
-  h1 { font-size: 22px; line-height: 1.25; font-weight: 600; margin-top: 18px; }
-  header p { font-size: 14px; opacity: .85; margin-top: 6px; line-height: 1.45; }
+  h1 { font-size: 22px; line-height: 1.25; font-weight: 600; margin-top: 14px; opacity: .85; }
+  header p { font-size: 17px; line-height: 1.4; font-weight: 500; margin-top: 4px; }
+  body.ecran-qui header p {
+    font-size: 30px; font-weight: 800; font-stretch: 75%; line-height: 1.02; letter-spacing: -0.5px;
+  }
   .changer {
     background: none; border: 0; padding: 0; margin-left: 4px;
-    font: inherit; color: #fff; text-decoration: underline; opacity: 1;
+    font: inherit; color: var(--jaune); text-decoration: underline;
   }
 
-  /* Écran 1 : qui vous a reçu ? */
-  .qui { padding: 20px 16px; display: grid; gap: 12px; max-width: 640px; margin: 0 auto; }
+  /* Le prénom choisi, géant, coupé par le bas de l'en-tête */
+  header[data-nom]:not([data-nom=""]) { padding-bottom: 0; }
+  header[data-nom]:not([data-nom=""])::after {
+    content: attr(data-nom); display: block;
+    font-size: min(40vw, 250px); font-weight: 900; font-stretch: 62%;
+    line-height: .74; letter-spacing: -0.03em;
+    color: var(--jaune); margin: 18px 0 max(-6vw, -38px) -1vw;
+  }
+
+  /* Écran 1 : les prénoms à pleine largeur, sur le bleu */
+  .qui { padding: 0 20px 40px; display: grid; justify-items: start; max-width: 640px; margin: 0 auto; }
   .qui button {
-    font: 600 18px Poppins, sans-serif; color: var(--bleu);
-    background: #fff; border: 2px solid var(--trait); border-radius: 16px; padding: 22px;
+    text-align: left; background: none; border: 0; padding: 0; cursor: pointer;
+    color: #fff; font-size: min(31vw, 190px); font-weight: 900; font-stretch: 62%;
+    line-height: .86; letter-spacing: -0.02em;
   }
-  .qui button:active { border-color: var(--bleu); background: #F0F5FA; }
-  .qui .autre { font-weight: 500; font-size: 16px; color: var(--gris); padding: 16px; }
+  .qui button:nth-child(2) { color: var(--jaune); }
+  .qui button:active { opacity: .7; }
+  .qui .autre {
+    font-size: 18px; font-weight: 600; font-stretch: 100%; line-height: 1.4; letter-spacing: 0;
+    color: #fff; opacity: .75; margin-top: 18px; text-decoration: underline;
+  }
 
-  /* Écran 2 : la liste */
-  main { padding: 14px 16px 120px; display: grid; gap: 10px; max-width: 640px; margin: 0 auto; }
+  /* Écran 2 : la liste en bandes pleine largeur */
+  main { padding: 0 0 110px; display: grid; max-width: 640px; margin: 0 auto; }
   .avis {
-    text-align: left; width: 100%;
-    font: 400 15px/1.5 Poppins, sans-serif; color: var(--nuit);
-    background: var(--carte); border: 1px solid var(--trait); border-radius: 14px;
-    padding: 16px;
+    text-align: left; width: 100%; cursor: pointer;
+    font-size: 17px; line-height: 1.5; color: var(--nuit);
+    background: #fff; border: 0; padding: 22px 20px;
   }
-  .avis:active { border-color: var(--bleu); background: #F0F5FA; }
+  .avis:nth-child(even) { background: var(--pale); }
+  .avis:active { background: var(--jaune); }
 
   .propre {
     position: fixed; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom));
     max-width: 608px; margin: 0 auto;
-    font: 600 15px Poppins, sans-serif; color: var(--bleu);
-    background: #fff; border: 2px solid var(--bleu); border-radius: 14px; padding: 14px;
-    box-shadow: 0 6px 24px rgba(16,35,53,.12);
+    font-size: 15px; font-weight: 700; color: #fff;
+    background: var(--nuit); border: 0; padding: 16px;
   }
 
   /* Écran 3 : l'avis choisi */
   .feuille {
     position: fixed; inset: 0; z-index: 10;
-    background: rgba(16,35,53,.5);
+    background: rgba(16,35,53,.6);
     display: flex; align-items: flex-end; justify-content: center;
   }
   .panneau {
     background: #fff; width: 100%; max-width: 640px;
-    border-radius: 22px 22px 0 0;
     padding: 22px 20px calc(20px + env(safe-area-inset-bottom));
     max-height: 92dvh; overflow-y: auto;
     animation: monte .22s ease-out;
   }
   @keyframes monte { from { transform: translateY(40px); opacity: 0; } }
-  .panneau h2 { font-size: 18px; font-weight: 600; }
+  @media (prefers-reduced-motion: reduce) { .panneau { animation: none; } }
+  .panneau h2 { font-size: 30px; font-weight: 900; font-stretch: 75%; }
   textarea {
     width: 100%; margin-top: 12px; min-height: 140px; resize: vertical;
-    font: 400 16px/1.5 Poppins, sans-serif; color: var(--nuit);
-    border: 1px solid var(--trait); border-radius: 12px; padding: 14px;
-    background: var(--fond);
+    font-size: 16px; line-height: 1.5; color: var(--nuit);
+    border: 0; padding: 14px; background: var(--pale);
   }
-  textarea:focus { outline: 2px solid var(--bleu); outline-offset: -1px; background: #fff; }
+  textarea:focus { outline: 2px solid var(--bleu); outline-offset: -2px; background: #fff; }
   .compteur { font-size: 13px; color: var(--gris); margin-top: 6px; text-align: right; }
   .compteur.court { color: #B3261E; }
   .astuce { font-size: 13px; color: var(--gris); margin-top: 4px; line-height: 1.45; }
 
   .etapes { list-style: none; padding: 0; margin: 18px 0; display: grid; gap: 8px; }
-  .etapes li { display: flex; gap: 10px; align-items: center; font-size: 14px; }
+  .etapes li { display: flex; gap: 10px; align-items: center; font-size: 15px; }
   .etapes b {
-    flex: none; width: 24px; height: 24px; border-radius: 50%;
+    flex: none; width: 24px; height: 24px;
     background: var(--jaune); color: var(--nuit);
     display: grid; place-items: center; font-size: 13px;
   }
 
   .publier {
-    width: 100%; font: 600 17px Poppins, sans-serif;
-    background: var(--bleu); color: #fff; border: 0; border-radius: 14px; padding: 17px;
+    width: 100%; font-size: 18px; font-weight: 800; cursor: pointer;
+    background: var(--jaune); color: var(--nuit); border: 0; padding: 18px;
   }
   .publier:disabled { opacity: .4; }
   .retour {
-    width: 100%; margin-top: 8px; background: none; border: 0; padding: 12px;
-    font: 500 15px Poppins, sans-serif; color: var(--gris);
+    width: 100%; margin-top: 8px; background: none; border: 0; padding: 12px; cursor: pointer;
+    font-size: 15px; font-weight: 500; color: var(--gris);
   }
 
   .toast {
     position: fixed; left: 50%; top: calc(20px + env(safe-area-inset-top)); z-index: 20;
     transform: translateX(-50%);
-    background: var(--nuit); color: #fff; font-size: 15px; font-weight: 500;
-    padding: 12px 20px; border-radius: 99px;
+    background: var(--nuit); color: #fff; font-size: 15px; font-weight: 600;
+    padding: 12px 20px;
   }
 </style>
 </head>
-<body>
+<body class="ecran-qui">
 
 <header>
   <div class="logo">ixina<span>Tour & Taxis</span></div>
@@ -208,6 +227,8 @@
 
   function choisirConseiller(nom) {
     conseiller = nom;
+    document.querySelector("header").dataset.nom = nom;
+    document.body.classList.remove("ecran-qui");
     $("qui").hidden = true;
     $("liste").hidden = false;
     $("propre").hidden = false;
@@ -226,6 +247,8 @@
 
   function revenirQui() {
     conseiller = null;
+    delete document.querySelector("header").dataset.nom;
+    document.body.classList.add("ecran-qui");
     $("qui").hidden = false;
     $("liste").hidden = true;
     $("propre").hidden = true;
